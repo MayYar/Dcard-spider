@@ -8,7 +8,7 @@ import json
 dcard = Dcard()
 
 #  取得看板最新 50 篇 
-metadata_forums = dcard.forums('tvepisode').get_metas(num=20, sort='new')  # default=30, new
+metadata_forums = dcard.forums('tvepisode').get_metas(num=500, sort='new')  # default=30, new
 
 ids = [meta['id'] for meta in metadata_forums]
 articles = dcard.posts(ids).get()    # or # articles = dcard.posts(metadata_forums).get()
@@ -18,18 +18,50 @@ articles = dcard.posts(ids).get()    # or # articles = dcard.posts(metadata_foru
 # 存取 articles 中的內容
 # 1. articles.results -> get a `generator()`
 # `article` is a Python dict() object
+
+search_query = input("搜尋:")
+
+pushCount = 0
+lookFowardToCount = 0
+
 index = 1
 for article in articles.results:
-	print(index, article['title'])
-	index = index + 1
-	if len(article['topics']) != 0:
-		print('類別: ',article['topics'][0])
+	
+	if search_query not in article['title']:
+		continue
 	else:
-		print('類別: ',article['topics'])
-	# for comment in article['comments']:
-	# 	print(comment['content'])
-	print('--------------------------------') 
+		if '韓劇' in article['topics']:
+			print(index, article['title'])
+			print(article['createdAt'])
+
+			for comment in article['comments']: 
+				if 'content' in comment:
+					# print(comment['content'],'\n')
+					if '推' in comment['content']:
+						pushCount = pushCount + 1
+					if '期待' in comment['content']:
+						lookFowardToCount = lookFowardToCount + 1
+
+			index = index + 1
+
+		elif '韓劇' in article['title']:
+			print(index, article['title'])
+			print(article['createdAt'])
+
+			for comment in article['comments']:
+				if 'content' in comment:
+					# print(comment['content'],'\n')
+					if '推' in comment['content']:
+						pushCount = pushCount + 1
+					if '期待' in comment['content']:
+						lookFowardToCount = lookFowardToCount + 1
+
+			index = index + 1
+
+		print('推:',pushCount, '& 期待:', lookFowardToCount)
+
+	# print('--------------------------------') 
 
 #  Dumps all articles data into file directly
-# with open('output.json', 'w', encoding='utf-8') as f:
+# with open('output1.json', 'w', encoding='utf-8') as f:
 #     json.dump(articles.result(), f, ensure_ascii=False)
